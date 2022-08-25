@@ -12,8 +12,6 @@ import { Logger } from '../logger/logger.service';
 export class CandyMachineCreatorService implements OnModuleInit {
   private bot: TelegramBot;
 
-  private msg: TelegramBot.Message;
-
   private saleConfig: SalesConfigEntity;
 
   constructor(
@@ -31,30 +29,29 @@ export class CandyMachineCreatorService implements OnModuleInit {
     this.bot.onText(/\/create/, async (msg) => {
       try {
         this.saleConfig = {};
-        this.msg = msg;
 
         this.handleStop();
 
         // Async to create white listed
-        await this.handleCreateWhitelisted();
+        await this.handleCreateWhitelisted(msg);
 
         // Async to get name of candy machine
-        await this.onName();
+        await this.onName(msg);
 
         // Async to get price of each ft
-        await this.onPrice();
+        await this.onPrice(msg);
 
         // Async to get amount
-        await this.onAmount();
+        await this.onAmount(msg);
 
         // Async to get golive date
-        await this.onGoliveDate();
+        await this.onGoliveDate(msg);
 
         // Async to get end date
-        await this.onEndDate();
+        await this.onEndDate(msg);
 
         this.bot.sendMessage(
-          this.msg.from.id,
+          msg.from.id,
           'Wait the moment to setting the configuration',
         );
 
@@ -66,7 +63,7 @@ export class CandyMachineCreatorService implements OnModuleInit {
           path.dirname(require.main.filename),
           '../../',
           'candy-machine/',
-          `${this.msg.from.id}${this.saleConfig.name}.json`,
+          `${msg.from.id}${this.saleConfig.name}.json`,
         );
 
         this.logger.log(filePath);
@@ -79,7 +76,7 @@ export class CandyMachineCreatorService implements OnModuleInit {
         this.logger.log('Result of sale config file', result);
 
         this.bot.sendMessage(
-          this.msg.from.id,
+          msg.from.id,
           'Wait the moment to create new candy machine',
         );
 
@@ -89,7 +86,7 @@ export class CandyMachineCreatorService implements OnModuleInit {
             this.saleConfig.name,
           );
 
-        this.bot.sendMessage(this.msg.from.id, `${candy_machine_info}`);
+        this.bot.sendMessage(msg.from.id, `${candy_machine_info}`);
 
         if (!(await this.bot.isPolling())) {
           await this.bot.startPolling();
@@ -106,7 +103,7 @@ export class CandyMachineCreatorService implements OnModuleInit {
     });
   }
 
-  async handleCreateWhitelisted() {
+  async handleCreateWhitelisted(msg: TelegramBot.Message) {
     if (!(await this.bot.isPolling())) return;
     const opts = {
       reply_markup: {
@@ -132,7 +129,7 @@ export class CandyMachineCreatorService implements OnModuleInit {
     };
 
     this.bot.sendMessage(
-      this.msg.chat.id,
+      msg.chat.id,
       'Would you like to set the whitelisted setting for this machine',
       opts,
     );
@@ -164,45 +161,45 @@ export class CandyMachineCreatorService implements OnModuleInit {
     });
   }
 
-  async onName() {
+  async onName(msg: TelegramBot.Message) {
     if (!(await this.bot.isPolling())) return;
-    this.bot.sendMessage(this.msg.from.id, 'Name of candy machine: ');
+    this.bot.sendMessage(msg.from.id, 'Name of candy machine: ');
     this.saleConfig.name = await new Promise((resolve) =>
       this.bot.on('message', (msg) => resolve(msg.text)),
     );
   }
 
-  async onPrice() {
+  async onPrice(msg: TelegramBot.Message) {
     if (!(await this.bot.isPolling())) return;
     try {
-      this.bot.sendMessage(this.msg.from.id, 'Price of each nft: ');
+      this.bot.sendMessage(msg.from.id, 'Price of each nft: ');
       this.saleConfig.price = await new Promise((resolve) =>
         this.bot.on('message', (msg) => resolve(Number.parseFloat(msg.text))),
       );
     } catch {}
   }
 
-  async onAmount() {
+  async onAmount(msg: TelegramBot.Message) {
     if (!(await this.bot.isPolling())) return;
     try {
-      this.bot.sendMessage(this.msg.from.id, 'Amount of nfts: ');
+      this.bot.sendMessage(msg.from.id, 'Amount of nfts: ');
       this.saleConfig.number = await new Promise((resolve) =>
         this.bot.on('message', (msg) => resolve(Number.parseFloat(msg.text))),
       );
     } catch {}
   }
 
-  async onGoliveDate() {
+  async onGoliveDate(msg: TelegramBot.Message) {
     if (!(await this.bot.isPolling())) return;
-    this.bot.sendMessage(this.msg.from.id, 'Golive date: ');
+    this.bot.sendMessage(msg.from.id, 'Golive date: ');
     this.saleConfig.goLiveDate = await new Promise((resolve) =>
       this.bot.on('message', (msg) => resolve(msg.text)),
     );
   }
 
-  async onEndDate() {
+  async onEndDate(msg: TelegramBot.Message) {
     if (!(await this.bot.isPolling())) return;
-    this.bot.sendMessage(this.msg.from.id, 'End date: ');
+    this.bot.sendMessage(msg.from.id, 'End date: ');
     this.saleConfig.endDate = await new Promise((resolve) =>
       this.bot.on('message', (msg) => resolve(msg.text)),
     );
