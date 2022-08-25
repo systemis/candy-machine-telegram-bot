@@ -35,12 +35,14 @@ export class CandyMachineProvider {
     this.config.price = saleConfigDto.price;
     this.config.number = saleConfigDto.number;
     this.config.goLiveDate = saleConfigDto.goLiveDate;
+
     if (saleConfigDto.endDate) {
       this.config.endSettings = {
         endSettingType: { date: true },
         value: saleConfigDto.endDate,
       };
     }
+
     if (saleConfigDto.token) {
       this.config.whitelistMintSettings = {
         mode: { burnEveryTime: true },
